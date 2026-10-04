@@ -7,6 +7,10 @@ permissions:
   contents: read
 jobs:
   validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12', '3.13']
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -17,13 +21,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python }}
           cache: pip
       - name: Install pinned lab and validation packages
         run: |
-          python -m pip install -r requirements.txt -r requirements-dev.txt
-          python -m pip install -r requirements-torch.txt
+          python -m pip install --only-binary=:all: -r requirements.txt -r requirements-dev.txt
+          python -m pip install --only-binary=:all: -r requirements-torch.txt
       - name: Validate notebooks and smoke-test scaffolding
         run: |
+          python -m pip check
           python check_environment.py
           python scripts/validate.py --smoke

@@ -1,5 +1,6 @@
-# Shared scientific stack. Install PyTorch separately for Labs 3 and 5.
-numpy==2.0.2
-scipy==1.15.3
+# Python 3.11–3.13; aligned with the current Colab CPU snapshot (2026-10-04).
+# Install PyTorch separately for Labs 3 and 5.
+numpy==2.1.3
+scipy==1.16.3
 scikit-learn==1.6.1
-matplotlib==3.10.3
+matplotlib==3.10.0

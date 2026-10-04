@@ -37,20 +37,28 @@ If your school Google account blocks “Anyone with the link,” contact the ins
 
 **Cloning alone does not save answers.** A clone is a local copy of repository files; changes must be saved locally and, for a GitHub workflow, explicitly committed and pushed. A Colab runtime is temporary. Saving a notebook in Drive preserves its cells and outputs, not the runtime’s files or installed libraries.
 
+## Update a notebook already copied to Drive
+
+The original release limited Python to 3.11/3.12 and pinned NumPy 2.0.2, which lacks Python 3.13 wheels. This revision accepts Python 3.13 and uses compatible package pins. A Drive copy is independent: refreshing it does not pull updates from GitHub.
+
+- **If you have not started:** reopen the lab using the README’s Colab badge, reload that GitHub-backed tab if already open, and choose **File → Save a copy in Drive** again.
+- **If you have work to preserve:** keep the old Drive copy as a backup. Save a fresh copy from the updated badge and transfer your completed code, comparisons, and analysis into it. Alternatively, replace only the two code cells under **Install the lab environment** (setup and environment) and the setup instructions with those from the latest version of the **same lab**. Labs 3 and 5 include PyTorch setup. Leave exercise and analysis cells intact.
+- Save your copy, select **Runtime → Restart session**, and rerun the setup and environment cells. The setup should now accept Python 3.13. After completing and rerunning the lab, save outputs and submit the link to the copy you actually worked in.
+
 ## Optional GitHub workflow
 
 A GitHub account is needed only if you choose to fork and save there. Fork the repository into your account, then save your work explicitly to your fork (Colab: **File → Save a copy to GitHub**, which asks for GitHub authorization), or commit and push your local edits. Opening a notebook from GitHub does not automatically update GitHub. Forks of this public repository are public; follow the instructor’s policy about public coursework. The Drive save/share workflow above is the default and avoids collecting students’ GitHub IDs. Do not submit answers as a pull request to the course repository.
 
 ## Environment and local use
 
-Use Python 3.11 or 3.12; validation uses Python 3.12. The shared packages have exact direct-version pins in `requirements.txt`. Labs 3 and 5 additionally use CPU PyTorch 2.8.0. The notebooks install the same versions themselves when you run setup. No GPU or paid Colab plan is required by the lab code; Colab availability and runtime limits still apply.
+Use Colab’s **default Python CPU runtime**; no Python downgrade or past runtime selection is needed. The labs support Python **3.11–3.13**, with all three versions covered by CI. The shared packages have exact direct-version pins in `requirements.txt`. Labs 3 and 5 additionally use CPU PyTorch 2.11.0. The notebooks install the same versions themselves when you run setup. No GPU or paid Colab plan is required by the lab code; Colab availability and runtime limits still apply.
 
-Colab updates its environment. If its default Python is incompatible, use **Runtime → Change runtime type → Runtime Version** to choose a Python 3.12 runtime; availability of past versions is time-limited. Run setup before imports and restart the session if prompted after a package change. Record the printed versions in your submission.
+On 2026-10-04, Google’s [backend snapshot](https://github.com/googlecolab/backend-info/blob/e39694e267a4b13c71d339c9fa7d4552f7995ac7/os-info.txt) lists Python 3.13; its [package snapshot](https://github.com/googlecolab/backend-info/blob/e39694e267a4b13c71d339c9fa7d4552f7995ac7/pip-freeze.txt) lists the versions used here. These snapshots can lag production, so the setup cell prints your actual Python version and the environment cell checks the imported package versions. Run setup before imports; if prompted after a package change, choose **Runtime → Restart session**, then rerun from setup. Binary wheels are required; setup will not compile packages from source. Do not replace Colab’s system Python. Record the printed versions in your submission.
 
 For a local Linux/Windows environment, from this repository:
 
 ```bash
-python3.12 -m venv .venv
+python3.13 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 python -m pip install -r requirements-torch.txt
@@ -58,7 +66,7 @@ python check_environment.py
 python labs/week01_starter.py
 ```
 
-On Windows use `py -3.12 -m venv .venv` and `.venv\Scripts\activate` (Command Prompt). On macOS install `torch==2.8.0` from PyPI instead of `requirements-torch.txt`. To edit notebooks locally, additionally install `jupyterlab` and run `jupyter lab`. These platform alternatives are not part of the Linux smoke test.
+On Windows use `py -3.13 -m venv .venv` and `.venv\Scripts\activate` (Command Prompt). On macOS install `torch==2.11.0` from PyPI instead of `requirements-torch.txt`. To edit notebooks locally, additionally install `jupyterlab` and run `jupyter lab`. These platform alternatives are not part of the Linux smoke test.
 
 An unfinished starter raises `NotImplementedError`. Finish the required functions before running its full checks and experiment. For a source submission, save the result dictionary with `json.dump`, convert any arrays to lists, and include configuration and the actual execution command. If linear algebra is unexpectedly slow, set `OPENBLAS_NUM_THREADS=1` and `OMP_NUM_THREADS=1` before starting Python.
 
@@ -68,7 +76,7 @@ All included text, labels, signals, and simulated ratings are original generated
 
 ## Repository validation
 
-The release check validates notebook schema and syntax, empty outputs, the 24 exercise gaps, and notebook/script consistency. Smoke checks load the provided scaffolding, generate synthetic data, and confirm that unfinished checks stop as expected. They do not fill answers or run completed experiments.
+The release check validates notebook schema and syntax, empty outputs, the 24 exercise gaps, and notebook/script consistency. Smoke checks on Python 3.11, 3.12, and 3.13 load the provided scaffolding, generate synthetic data, exercise the scientific/ML APIs used by the scaffolding, and confirm that unfinished checks stop as expected. They do not fill answers or run completed experiments.
 
 ```bash
 python -m pip install -r requirements-dev.txt
@@ -76,7 +84,7 @@ python scripts/validate.py
 python scripts/validate.py --smoke
 ```
 
-The GitHub Actions workflow runs these checks on repository changes; it does not run or share students’ notebooks.
+The GitHub Actions workflow runs these checks on repository changes; it does not run or share students’ notebooks. Setup and notebook-kernel smoke tests also passed locally on Python 3.13.13. These are local/CI compatibility tests, not execution in a Google-hosted Colab runtime. Students still run, save, and share their own notebooks.
 
 ## Official help
 
@@ -85,6 +93,8 @@ Behavior checked against primary documentation on 2026-10-04:
 - [Google’s Colab/GitHub guide](https://github.com/googlecolab/colabtools/blob/main/notebooks/colab-github-demo.ipynb): opening notebooks, saving copies, and badge URL format.
 - [Colab FAQ](https://research.google.com/colaboratory/faq.html): Drive storage, shared notebook contents, temporary runtimes, and setup cells.
 - [Google Drive sharing](https://support.google.com/drive/answer/2494822?hl=en): Anyone with the link and Viewer permissions.
-- [Colab runtime versions](https://research.google.com/colaboratory/runtime-version-faq.html): selecting compatible past Python runtimes.
+- [Colab backend information](https://github.com/googlecolab/backend-info): current Python and package snapshots.
+- [NumPy 2.1 release notes](https://numpy.org/doc/2.1/release/2.1.0-notes.html): Python 3.13 support.
+- [Colab runtime versions](https://research.google.com/colaboratory/runtime-version-faq.html): explains that the past-version list is separate from the current default runtime.
 - [GitHub repositories](https://docs.github.com/en/repositories/creating-and-managing-repositories/about-repositories): public access and cloning.
 - [GitHub forks](https://docs.github.com/en/pull-requests/reference/forks): public fork visibility.

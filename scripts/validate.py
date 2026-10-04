@@ -75,6 +75,26 @@ def validate(week, smoke=False):
     assert tags['student-comparisons'].source == '# TODO: implement and run the remaining required comparisons here.\nadditional_results = {}\n'
     handout = (ROOT / 'labs' / f'LAB{week:02}.md').read_text()
     assert handout.startswith(tags['handout'].source)
+    # Keep standalone notebook pins synchronized with the local/CI environment.
+    expected_packages = dict(line.split('==') for line in
+                             (ROOT / 'requirements.txt').read_text().splitlines()
+                             if line and not line.startswith('#'))
+    setup_tree = ast.parse(tags['setup'].source)
+    package_assignment = next(node for node in setup_tree.body
+                              if isinstance(node, ast.Assign)
+                              and isinstance(node.targets[0], ast.Name)
+                              and node.targets[0].id == 'LAB_PACKAGES')
+    assert ast.literal_eval(package_assignment.value) == expected_packages
+    torch_pins = [node for node in setup_tree.body if isinstance(node, ast.Assign)
+                  and isinstance(node.targets[0], ast.Subscript)]
+    if week in (3, 5):
+        torch_version = next(line.split('==')[1] for line in
+                             (ROOT / 'requirements-torch.txt').read_text().splitlines()
+                             if line.startswith('torch=='))
+        assert len(torch_pins) == 1
+        assert ast.literal_eval(torch_pins[0].value) == torch_version
+    else:
+        assert not torch_pins
     for word in ['Save a copy in Drive', 'Anyone with the link', 'Viewer', 'course', 'Cloning']:
         assert word in tags['submission'].source + tags['introduction'].source, (week, word)
     # The release should contain neither embedded media nor saved result payloads.
@@ -115,6 +135,47 @@ def validate(week, smoke=False):
     print(f'Lab {week}: schema, syntax, {len(GAPS[week])} unfilled exercises, empty outputs, script parity' + ('; setup/scaffolding smoke passed' if smoke else ''))
 
 
+def dependency_api_smoke():
+    """Exercise library APIs on separate tiny data, without answering a lab."""
+    import warnings
+    import numpy as np
+    import torch
+    from matplotlib.figure import Figure
+    from sklearn.decomposition import TruncatedSVD
+    from sklearn.exceptions import ConvergenceWarning
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.neural_network import MLPClassifier
+    from sklearn.metrics import f1_score, confusion_matrix
+
+    raw = TfidfVectorizer().fit_transform(['red square', 'blue circle', 'red circle', 'blue square'])
+    dense = TruncatedSVD(n_components=2, random_state=17).fit_transform(raw)
+    labels = np.array([0, 1, 0, 1])
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', ConvergenceWarning)
+        model = MLPClassifier(hidden_layer_sizes=(2,), max_iter=2, random_state=17).fit(dense, labels)
+    prediction = model.predict(dense)
+    assert confusion_matrix(labels, prediction).shape == (2, 2)
+    assert np.isfinite(f1_score(labels, prediction, average='macro'))
+    assert np.fft.rfft(np.zeros(400), n=512).shape == (257,)
+    figure = Figure()
+    figure.subplots().plot([0, 1], [0, 1])
+    figure.clear()
+
+    torch.set_num_threads(1)
+    embedding = torch.nn.Embedding(4, 3)
+    recurrent = torch.nn.GRU(3, 3, batch_first=True)
+    head = torch.nn.Linear(3, 4)
+    optimizer = torch.optim.Adam(list(embedding.parameters()) + list(recurrent.parameters()) + list(head.parameters()))
+    values, _ = recurrent(embedding(torch.tensor([[0, 1, 2]])))
+    loss = torch.nn.functional.cross_entropy(head(values).reshape(-1, 4), torch.tensor([1, 2, 3]))
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    assert torch.isfinite(loss)
+    assert values.device.type == 'cpu'
+    print('Scientific/ML API smoke passed: TF-IDF, SVD, MLP, metrics, FFT, plotting, CPU GRU/autograd/Adam.')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--smoke', action='store_true', help='run setup and supplied scaffolding only')
@@ -122,6 +183,8 @@ def main():
     assert len(list((ROOT / 'labs').glob('*.ipynb'))) == 7
     for week in range(1, 8):
         validate(week, args.smoke)
+    if args.smoke:
+        dependency_api_smoke()
     print('PASS: 7 student notebooks; 24 exercise functions remain unfilled.')
 
 
