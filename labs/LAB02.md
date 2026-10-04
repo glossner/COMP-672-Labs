@@ -1,6 +1,6 @@
 # Lab 2 — Logistic regression embeddings and a neural classifier
 
-**2 points.** Chapters 4, 5, 6; outcomes LO2, LO8. Allow 4–5 hours including the 60-minute lab meeting. Complete the Python starter or the Jupyter starter, not both. The scaffolding contains intentional `NotImplementedError` gaps.
+Chapters 4, 5, 6
 
 ## Implementation tasks
 
@@ -29,23 +29,11 @@ Functions to complete: `loss_gradient`, `train_logistic`, `cosine`, `paired_boot
 
 3. What uncertainty does the paired interval capture, and what training variability does it omit?
 
-
 Answer each question in approximately 2–4 sentences beside the results. This is part of the lab, with no separate report.
 
-## Submission and rubric
+## Submission
 
-Submit the link to your completed, saved Colab copy (or edited notebook/source if working locally), a results JSON file, and an execution command. Follow the save/share steps in the repository README. For Colab, state “Run cells from top to bottom in a fresh CPU runtime.” Include versions, seed, split policy, settings, runtime, and clear labels. No points depend on a positive gain.
-
-| Criterion | Points | Evidence |
-| --- | --- | --- |
-| Implementation | 0.8 | Required functions implement the intended mathematics and boundary behavior |
-| Experiments | 0.6 | Both required comparisons are run and outputs are recorded |
-| Comprehension | 0.4 | Brief answers accurately connect results to the three analysis questions |
-| Reproducibility | 0.2 | Runnable submission with configuration, seed, and data scope |
-| Total | 2.0 | Partial credit is proportional to the evidence supplied |
-
-Split implementation credit equally among required functions; split experiment credit equally between the two comparisons. Assess the three analysis answers together on a 0–0.4 scale; award 0.4 for all three accurate and grounded, 0.2 for partial understanding, 0 for absent or fundamentally incorrect explanations. Intermediate credit is allowed.
+From Colab: **Share → General access → Anyone with the link → Viewer**. Click **Copy link**. Paste the link into the Canvas assignment submission.
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/glossner/COMP-672-Labs/blob/main/labs/week02_starter.ipynb)
 
-[Save and submit instructions](../README.md#save-and-submit)
