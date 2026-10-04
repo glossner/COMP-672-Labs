@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 import nbformat
+from packaging.requirements import Requirement
 
 ROOT = Path(__file__).resolve().parents[1]
 GAPS = {
@@ -76,25 +77,26 @@ def validate(week, smoke=False):
     handout = (ROOT / 'labs' / f'LAB{week:02}.md').read_text()
     assert handout.startswith(tags['handout'].source)
     # Keep standalone notebook pins synchronized with the local/CI environment.
-    expected_packages = dict(line.split('==') for line in
-                             (ROOT / 'requirements.txt').read_text().splitlines()
-                             if line and not line.startswith('#'))
-    setup_tree = ast.parse(tags['setup'].source)
-    package_assignment = next(node for node in setup_tree.body
-                              if isinstance(node, ast.Assign)
-                              and isinstance(node.targets[0], ast.Name)
-                              and node.targets[0].id == 'LAB_PACKAGES')
-    assert ast.literal_eval(package_assignment.value) == expected_packages
-    torch_pins = [node for node in setup_tree.body if isinstance(node, ast.Assign)
-                  and isinstance(node.targets[0], ast.Subscript)]
+    expected_packages = {}
+    for line in (ROOT / 'requirements.txt').read_text().splitlines():
+        if not line or line.startswith('#'):
+            continue
+        requirement = Requirement(line)
+        if requirement.marker is None or requirement.marker.evaluate():
+            pin, = requirement.specifier
+            assert pin.operator == '=='
+            assert requirement.name not in expected_packages
+            expected_packages[requirement.name] = pin.version
     if week in (3, 5):
-        torch_version = next(line.split('==')[1] for line in
-                             (ROOT / 'requirements-torch.txt').read_text().splitlines()
-                             if line.startswith('torch=='))
-        assert len(torch_pins) == 1
-        assert ast.literal_eval(torch_pins[0].value) == torch_version
-    else:
-        assert not torch_pins
+        expected_packages['torch'] = next(line.split('==')[1] for line in
+                                         (ROOT / 'requirements-torch.txt').read_text().splitlines()
+                                         if line.startswith('torch=='))
+    # Evaluate the notebook's real Python-version branch, stopping before the
+    # installer function/commands. This performs no downloads or installations.
+    configuration_prefix = tags['setup'].source.split('def installed_version', 1)[0]
+    configuration_scope = {}
+    exec(compile(configuration_prefix, f'{stem}:package-selection', 'exec'), configuration_scope)
+    assert configuration_scope['LAB_PACKAGES'] == expected_packages
     for word in ['Save a copy in Drive', 'Anyone with the link', 'Viewer', 'course', 'Cloning']:
         assert word in tags['submission'].source + tags['introduction'].source, (week, word)
     # The release should contain neither embedded media nor saved result payloads.
@@ -103,6 +105,7 @@ def validate(week, smoke=False):
         scope = {'__name__': f'lab{week}_smoke'}
         for tag in ['setup', 'environment']:
             exec(compile(tags[tag].source, f'{stem}:{tag}', 'exec'), scope)
+        assert scope['LAB_PACKAGES'] == expected_packages
         for cell in notebook.cells:
             if cell.cell_type == 'code' and any(tag.startswith('starter-') for tag in cell.metadata.tags):
                 exec(compile(cell.source, stem, 'exec'), scope)

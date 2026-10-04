@@ -39,11 +39,11 @@ If your school Google account blocks “Anyone with the link,” contact the ins
 
 ## Update a notebook already copied to Drive
 
-The original release limited Python to 3.11/3.12 and pinned NumPy 2.0.2, which lacks Python 3.13 wheels. This revision accepts Python 3.13 and uses compatible package pins. A Drive copy is independent: refreshing it does not pull updates from GitHub.
+The original release limited Python to 3.11/3.12 and pinned NumPy 2.0.2, which lacks Python 3.13 wheels. Current notebooks accept Python 3.11–3.14 and select compatible package pins for the running interpreter. A Drive copy is independent: refreshing it does not pull updates from GitHub.
 
 - **If you have not started:** reopen the lab using the README’s Colab badge, reload that GitHub-backed tab if already open, and choose **File → Save a copy in Drive** again.
 - **If you have work to preserve:** keep the old Drive copy as a backup. Save a fresh copy from the updated badge and transfer your completed code, comparisons, and analysis into it. Alternatively, replace only the two code cells under **Install the lab environment** (setup and environment) and the setup instructions with those from the latest version of the **same lab**. Labs 3 and 5 include PyTorch setup. Leave exercise and analysis cells intact.
-- Save your copy, select **Runtime → Restart session**, and rerun the setup and environment cells. The setup should now accept Python 3.13. After completing and rerunning the lab, save outputs and submit the link to the copy you actually worked in.
+- Save your copy, select **Runtime → Restart session**, and rerun the setup and environment cells. The setup should now accept Python 3.11–3.14. After completing and rerunning the lab, save outputs and submit the link to the copy you actually worked in.
 
 ## Optional GitHub workflow
 
@@ -51,9 +51,21 @@ A GitHub account is needed only if you choose to fork and save there. Fork the r
 
 ## Environment and local use
 
-Use Colab’s **default Python CPU runtime**; no Python downgrade or past runtime selection is needed. The labs support Python **3.11–3.13**, with all three versions covered by CI. The shared packages have exact direct-version pins in `requirements.txt`. Labs 3 and 5 additionally use CPU PyTorch 2.11.0. The notebooks install the same versions themselves when you run setup. No GPU or paid Colab plan is required by the lab code; Colab availability and runtime limits still apply.
+Use Colab’s **default Python CPU runtime**; no Python downgrade or past runtime selection is needed. The labs support Python **3.11–3.14**, with all four versions covered by CI. The shared packages have exact direct-version pins in `requirements.txt`. Labs 3 and 5 additionally use CPU PyTorch 2.11.0. The notebooks install the same versions themselves when you run setup. No GPU or paid Colab plan is required by the lab code; Colab availability and runtime limits still apply.
 
-On 2026-10-04, Google’s [backend snapshot](https://github.com/googlecolab/backend-info/blob/e39694e267a4b13c71d339c9fa7d4552f7995ac7/os-info.txt) lists Python 3.13; its [package snapshot](https://github.com/googlecolab/backend-info/blob/e39694e267a4b13c71d339c9fa7d4552f7995ac7/pip-freeze.txt) lists the versions used here. These snapshots can lag production, so the setup cell prints your actual Python version and the environment cell checks the imported package versions. Run setup before imports; if prompted after a package change, choose **Runtime → Restart session**, then rerun from setup. Binary wheels are required; setup will not compile packages from source. Do not replace Colab’s system Python. Record the printed versions in your submission.
+On 2026-10-04, Google’s [backend snapshot](https://github.com/googlecolab/backend-info/blob/e39694e267a4b13c71d339c9fa7d4552f7995ac7/os-info.txt) lists Python 3.13; its [package snapshot](https://github.com/googlecolab/backend-info/blob/e39694e267a4b13c71d339c9fa7d4552f7995ac7/pip-freeze.txt) lists the established Python 3.11–3.13 package pins used here. These snapshots can lag production, so the setup cell prints your actual Python version and the environment cell checks the imported package versions. Run setup before imports; if prompted after a package change, choose **Runtime → Restart session**, then rerun from setup. Binary wheels are required; setup will not compile packages from source. Do not replace Colab’s system Python. Record the printed versions in your submission.
+
+Python 3.14 is supported for local/Jupyter use; this is **not a claim that Colab offers Python 3.14**. Stay on Colab’s default CPU runtime. On Python 3.14, setup selects newer binary-wheel releases while preserving the existing pins on Python 3.11–3.13:
+
+| Package | Python 3.11–3.13 | Python 3.14 |
+| --- | --- | --- |
+| NumPy | 2.1.3 | 2.3.5 |
+| SciPy | 1.16.3 | 1.16.3 |
+| scikit-learn | 1.6.1 | 1.7.2 |
+| Matplotlib | 3.10.0 | 3.10.8 |
+| PyTorch (Labs 3 and 5; CPU) | 2.11.0 | 2.11.0 |
+
+These pins are selected automatically by Python-version markers in `requirements.txt` and by the equivalent notebook setup. Record the versions in your results because small numerical differences between environments are possible.
 
 For a local Linux/Windows environment, from this repository:
 
@@ -76,7 +88,7 @@ All included text, labels, signals, and simulated ratings are original generated
 
 ## Repository validation
 
-The release check validates notebook schema and syntax, empty outputs, the 24 exercise gaps, and notebook/script consistency. Smoke checks on Python 3.11, 3.12, and 3.13 load the provided scaffolding, generate synthetic data, exercise the scientific/ML APIs used by the scaffolding, and confirm that unfinished checks stop as expected. They do not fill answers or run completed experiments.
+The release check validates notebook schema and syntax, empty outputs, the 24 exercise gaps, and notebook/script consistency. Smoke checks on Python 3.11, 3.12, 3.13, and 3.14 load the provided scaffolding, generate synthetic data, exercise the scientific/ML APIs used by the scaffolding, and confirm that unfinished checks stop as expected. They do not fill answers or run completed experiments.
 
 ```bash
 python -m pip install -r requirements-dev.txt
@@ -84,7 +96,7 @@ python scripts/validate.py
 python scripts/validate.py --smoke
 ```
 
-The GitHub Actions workflow runs these checks on repository changes; it does not run or share students’ notebooks. Setup and notebook-kernel smoke tests also passed locally on Python 3.13.13. These are local/CI compatibility tests, not execution in a Google-hosted Colab runtime. Students still run, save, and share their own notebooks.
+The GitHub Actions workflow runs these checks on repository changes; it does not run or share students’ notebooks. Setup and notebook-kernel smoke tests also passed locally on Python 3.13.13 and Python 3.14.4. These are local/CI compatibility tests, not execution in a Google-hosted Colab runtime. Students still run, save, and share their own notebooks.
 
 ## Official help
 
@@ -95,6 +107,7 @@ Behavior checked against primary documentation on 2026-10-04:
 - [Google Drive sharing](https://support.google.com/drive/answer/2494822?hl=en): Anyone with the link and Viewer permissions.
 - [Colab backend information](https://github.com/googlecolab/backend-info): current Python and package snapshots.
 - [NumPy 2.1 release notes](https://numpy.org/doc/2.1/release/2.1.0-notes.html): Python 3.13 support.
+- [NumPy 2.3.3 release notes](https://numpy.org/doc/stable/release/2.3.3-notes.html): Python 3.11–3.14 support in the 2.3 series.
 - [Colab runtime versions](https://research.google.com/colaboratory/runtime-version-faq.html): explains that the past-version list is separate from the current default runtime.
 - [GitHub repositories](https://docs.github.com/en/repositories/creating-and-managing-repositories/about-repositories): public access and cloning.
 - [GitHub forks](https://docs.github.com/en/pull-requests/reference/forks): public fork visibility.

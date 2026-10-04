@@ -2,8 +2,8 @@
 import importlib
 import sys
 
-if not (3, 11) <= sys.version_info[:2] <= (3, 13):
-    raise RuntimeError("Use Python 3.11–3.13.")
+if not (3, 11) <= sys.version_info[:2] <= (3, 14):
+    raise RuntimeError("Use Python 3.11–3.14.")
 print("Python", sys.version.split()[0])
 for name in ["numpy", "scipy", "sklearn", "torch", "matplotlib"]:
     module = importlib.import_module(name)
